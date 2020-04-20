@@ -126,32 +126,10 @@ namespace Makercloud_Kitten {
     }
 
     /**
-     * @param SSID to SSID ,eg: "yourSSID"
-     * @param PASSWORD to PASSWORD ,eg: "yourPASSWORD"
-     * @param IOT_TOPIC to IOT_TOPIC ,eg: "yourIotTopic"
-     */
-    //% blockId=mc_kt_init
-    //% block="Initialise Maker Cloud"
-    //% advanced=true
-    export function init() {
-        init_kittenWiFi()
-    }
-
-    /**
-     * Connect your device to MQTT Server
-     */
-    //% blockId=mc_kt_connect_mqtt
-    //% block="Connect MQTT"
-    //% advanced=true
-    export function connectMqtt() {
-        connectMCMQTT()
-    }
-
-    /**
      * On wifi connected
      * @param handler Wifi connected callback
      */
-    //% blockId=on_wifi_connected block="on Wifi Connected"
+    //% blockId=on_wifi_connected block="on Wi-Fi connected"
     //% advanced=true
     export function on_wifi_connected(handler: () => void): void {
         wifiConn = handler;
@@ -161,7 +139,7 @@ namespace Makercloud_Kitten {
      * On wifi disconnected
      * @param handler Wifi disconnected callback
      */
-    //% blockId=on_wifi_disconnected block="on Wifi Disconnected"
+    //% blockId=on_wifi_disconnected block="on Wi-Fi disconnected"
     //% advanced=true
     export function on_wifi_disconnected(handler: () => void): void {
         wifiDisconn = handler;
@@ -174,7 +152,7 @@ namespace Makercloud_Kitten {
      * @param rx Rx pin; eg: SerialPin.P1
      */
     //% blockId=mc_kt_config_rxtx
-    //% block="Update Pin: | RX: %rx| TX: %tx"
+    //% block="update pin: | RX: %rx| TX: %tx"
     //% group="Connection"
     export function configRxTxPin(rx: SerialPin, tx: SerialPin) {
         SERIAL_TX = tx
@@ -182,7 +160,7 @@ namespace Makercloud_Kitten {
     }
 
     //% blockId=mc_kt_config_pwbrick
-    //% block="Update Armourbit Port|%port"
+    //% block="update Armourbit port|%port"
     //% group="Connection"
     export function configRxTxPwbrick(port: SerialPorts): void {
         SERIAL_TX = PortSerial[port][1]
@@ -190,7 +168,7 @@ namespace Makercloud_Kitten {
     }
 
     //% blockId=mc_kt_wifi_setup
-    //% block="Connect Wi-Fi SSID: %ssid Password: %password"
+    //% block="connect Wi-Fi SSID: %ssid password: %password"
     //% group="Connection"
     export function setupWifi(ssid: string, password: string) {
         init_kittenWiFi()
@@ -201,7 +179,7 @@ namespace Makercloud_Kitten {
     }
 
     //% blockId=mc_kt_connect_mc_mqtt
-    //% block="Connect Maker Cloud MQTT"
+    //% block="connect Maker Cloud MQTT"
     //% group="Connection"
     export function connectMakerCloudMQTT() {
         // connectMCMQTT()
@@ -213,7 +191,7 @@ namespace Makercloud_Kitten {
      * @param message ,eg: "message"
      */
     //% blockId=mc_kt_publish_message_to_topic
-    //% block="tell %topic about %message"
+    //% block="publish to %topic about %message"
     //% group="Publish"
     export function publishToTopic(topic: string, message: string) {
         if (isSetup) {
@@ -230,7 +208,7 @@ namespace Makercloud_Kitten {
      * @param inText ,eg: "message"
      */
     //% blockId=mc_kt_publish_key_text_message_to_topic
-    //% block="tell %topic about %key = $inText"
+    //% block="publish to %topic about %key = $inText"
     //% group="Publish"
     export function publishKeyTextToTopic(topic: string, key: string, inText: string) {
         if (isSetup) {
@@ -247,7 +225,7 @@ namespace Makercloud_Kitten {
      * @param value ,eg: "0"
     */
     //% blockId=mc_kt_publish_key_value_message_to_topic
-    //% block="tell %topic about %key = $value"
+    //% block="publish to %topic about %key = $value"
     //% group="Publish"
     export function publishKeyValueToTopic(topic: string, key: string, value: number) {
         if (isSetup) {
@@ -260,10 +238,10 @@ namespace Makercloud_Kitten {
 
     /**
      * Subscribe to MQTT topic
-     * @param inTopics to inTopics ,eg: "Topic"
+     * @param inTopics to inTopics ,eg: "topic"
      */
     //% blockId=mc_kt_subscribe_topic
-    //% block="Subscribe to %topics"
+    //% block="subscribe %topics"
     //% group="Subscribe"
     export function subscribeTopic(inTopics: string) {
         if (topics == null) {
@@ -277,13 +255,13 @@ namespace Makercloud_Kitten {
 
     /**
      * Listener for MQTT topic
-     * @param topic to topic ,eg: "ZXY"
+     * @param topic to topic ,eg: "topic"
      */
     //% blockId=mc_kt_register_topic_text_message_handler
-    //% block="When something talk to %topic, then"
+    //% block="on MQTT %topic received"
     //% draggableParameters
     //% group="Subscribe"
-    export function registerTopicMessageHandler(topic: string, fn: (textMessage: string) => void) {
+    export function registerTopicMessageHandler(topic: string, fn: (receivedMessage: string) => void) {
         let topicHandler = new StringMessageHandler()
         topicHandler.fn = fn
         topicHandler.topicName = topic
@@ -292,13 +270,13 @@ namespace Makercloud_Kitten {
 
     /**
      * Listener for MQTT topic
-     * @param topic to topic ,eg: "ZXY"
+     * @param topic to topic ,eg: "topic"
      */
     //% blockId=mc_kt_register_topic_key_string_message_handler
-    //% block="When something talk to %topic, then"
+    //% block="on MQTT %topic received"
     //% draggableParameters
     //% group="Subscribe"
-    export function registerTopicKeyStringMessageHandler(topic: string, fn: (key: string, message: string) => void) {
+    export function registerTopicKeyStringMessageHandler(topic: string, fn: (key: string, receivedMessage: string) => void) {
         let topicHandler = new KeyStringMessageHandler()
         topicHandler.fn = fn
         topicHandler.topicName = topic
@@ -307,13 +285,13 @@ namespace Makercloud_Kitten {
 
     /**
      * Listener for MQTT topic
-     * @param topic to topic ,eg: "ZXY"
+     * @param topic to topic ,eg: "topic"
      */
     //% blockId=mc_kt_register_topic_key_value_message_handler
-    //% block="When something talk to %topic, then"
+    //% block="on MQTT %topic received"
     //% draggableParameters
     //% group="Subscribe"
-    export function registerTopicKeyValueMessageHandler(topic: string, fn: (key: string, value: number) => void) {
+    export function registerTopicKeyValueMessageHandler(topic: string, fn: (key: string, receivedValue: number) => void) {
         let topicHandler = new KeyValueMessageHandler()
         topicHandler.fn = fn
         topicHandler.topicName = topic
@@ -344,11 +322,12 @@ namespace Makercloud_Kitten {
             if (stat == 5) {
                 serial.writeString("WF 10 4 0 2 3 4 5\n") // mqtt callback install
                 ipAddr = seekNext()
+                if (isInit) connectMCMQTT()
                 if (wifiConn && isInit) {
                     wifiConn()
-                    connectMCMQTT()
                     // showLoading(5000)
                 }
+                isSetup = true
             } else {
                 ipAddr = ''
                 if (wifiDisconn && isSetup) wifiDisconn()
@@ -376,6 +355,8 @@ namespace Makercloud_Kitten {
     serial.onDataReceived('\n', function () {
         v = serial.readString()
         let argv: string[] = []
+
+        // serial.writeLine(v)
 
         if (v.charAt(0) == 'W' && v.charAt(1) == 'F') {
             v = v.substr(3, v.length - 3) + ' '
@@ -428,7 +409,8 @@ namespace Makercloud_Kitten {
         if (isSubscribe) subscribeMQTT()
         // basic.pause(500)
         // showLoading(1000);
-        showLoadingStage3(500)
+        basic.pause(500)
+        showLoadingStage3(3000)
     }
 
     function handleTopicStringMessage(topic: string, stringMessageList: string[]) {
@@ -645,7 +627,8 @@ namespace Makercloud_Kitten {
         `)
     }
     export function showLoadingStage3(time: number) {
-        let interval = 0
+        let interval = time/16
+        interval = 0
         basic.showLeds(`
         . . # . .
         . # # # .
@@ -653,6 +636,7 @@ namespace Makercloud_Kitten {
         . # # # .
         . . . . .
         `)
+        basic.pause(interval)
         basic.showLeds(`
         . . # # .
         . # # # .
@@ -660,6 +644,7 @@ namespace Makercloud_Kitten {
         . # # # .
         . . . . .
         `)
+        basic.pause(interval)
         basic.showLeds(`
         . . # # #
         . # # # .
@@ -667,6 +652,7 @@ namespace Makercloud_Kitten {
         . # # # .
         . . . . .
         `)
+        basic.pause(interval)
         basic.showLeds(`
         . . # # #
         . # # # #
@@ -674,6 +660,7 @@ namespace Makercloud_Kitten {
         . # # # .
         . . . . .
         `)
+        basic.pause(interval)
         basic.showLeds(`
         . . # # #
         . # # # #
@@ -681,6 +668,7 @@ namespace Makercloud_Kitten {
         . # # # .
         . . . . .
         `)
+        basic.pause(interval)
         basic.showLeds(`
         . . # # #
         . # # # #
@@ -688,6 +676,7 @@ namespace Makercloud_Kitten {
         . # # # #
         . . . . .
         `)
+        basic.pause(interval)
         basic.showLeds(`
         . . # # #
         . # # # #
@@ -695,6 +684,7 @@ namespace Makercloud_Kitten {
         . # # # #
         . . . . #
         `)
+        basic.pause(interval)
         basic.showLeds(`
         . . # # #
         . # # # #
@@ -702,6 +692,7 @@ namespace Makercloud_Kitten {
         . # # # #
         . . . # #
         `)
+        basic.pause(interval)
         basic.showLeds(`
         . . # # #
         . # # # #
@@ -709,6 +700,7 @@ namespace Makercloud_Kitten {
         . # # # #
         . . # # #
         `)
+        basic.pause(interval)
         basic.showLeds(`
         . . # # #
         . # # # #
@@ -716,6 +708,7 @@ namespace Makercloud_Kitten {
         . # # # #
         . # # # #
         `)
+        basic.pause(interval)
         basic.showLeds(`
         . . # # #
         . # # # #
@@ -723,6 +716,7 @@ namespace Makercloud_Kitten {
         . # # # #
         # # # # #
         `)
+        basic.pause(interval)
         basic.showLeds(`
         . . # # #
         . # # # #
@@ -730,6 +724,7 @@ namespace Makercloud_Kitten {
         # # # # #
         # # # # #
         `)
+        basic.pause(interval)
         basic.showLeds(`
         . . # # #
         . # # # #
@@ -737,6 +732,7 @@ namespace Makercloud_Kitten {
         # # # # #
         # # # # #
         `)
+        basic.pause(interval)
         basic.showLeds(`
         . . # # #
         # # # # #
@@ -744,6 +740,7 @@ namespace Makercloud_Kitten {
         # # # # #
         # # # # #
         `)
+        basic.pause(interval)
         basic.showLeds(`
         # . # # #
         # # # # #
@@ -751,6 +748,7 @@ namespace Makercloud_Kitten {
         # # # # #
         # # # # #
         `)
+        basic.pause(interval)
         basic.showLeds(`
         # # # # #
         # # # # #
@@ -758,7 +756,7 @@ namespace Makercloud_Kitten {
         # # # # #
         # # # # #
         `)
-        isSetup = true
+        basic.pause(interval)
         basic.clearScreen()
     }
 }
