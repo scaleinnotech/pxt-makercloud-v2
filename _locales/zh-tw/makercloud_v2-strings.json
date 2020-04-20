@@ -15,7 +15,7 @@
   "Makercloud_Kitten.subscribeTopic|block": "subscribe %topics",
   "Makercloud_Kitten|block": "Makercloud_Kitten",
   "{id:category}Makercloud_Kitten": "Makercloud_Kitten",
-  "{id:group}Connection": "Connection",
-  "{id:group}Publish": "Publish",
-  "{id:group}Subscribe": "Subscribe"
+  "{id:group}Connection": "連接",
+  "{id:group}Publish": "發佈",
+  "{id:group}Subscribe": "訂閱"
 }
