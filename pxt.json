@@ -12,12 +12,12 @@
         "_locales/zh-cn/makercloud_v2-strings.json",
         "_locales/zh-cn/makercloud_v2-jsdoc-strings.json",
         "_locales/zh-tw/makercloud_v2-strings.json",
-        "_locales/zh-tw/makercloud_v2-jsdoc-strings.json"
+        "_locales/zh-tw/makercloud_v2-jsdoc-strings.json",
+        "_locales/zh-TW/README.md"
     ],
     "public": true,
     "supportedTargets": [
         "microbit"
     ],
-    "preferredEditor": "tsprj",
-    "installedVersion": "workspace:2b6c5ddc-71bd-4dfe-a70b-69e49a437db6"
+    "preferredEditor": "tsprj"
 }
