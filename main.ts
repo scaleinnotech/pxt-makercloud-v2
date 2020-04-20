@@ -120,7 +120,6 @@ namespace MakerCloud {
     */
     //% blockId=mc_kt_change_to_sit
     //% block="Maker Cloud Lab"
-    //% weight = 90
     //% advanced=true
     export function changeToSitServer() {
         SERVER = SIT_SERVER
@@ -131,7 +130,6 @@ namespace MakerCloud {
      * @param handler Wifi connected callback
      */
     //% blockId=on_wifi_connected block="on Wi-Fi connected"
-    //% weight = 80
     //% advanced=true
     export function on_wifi_connected(handler: () => void): void {
         wifiConn = handler;
@@ -142,7 +140,6 @@ namespace MakerCloud {
      * @param handler Wifi disconnected callback
      */
     //% blockId=on_wifi_disconnected block="on Wi-Fi disconnected"
-    //% weight = 70
     //% advanced=true
     export function on_wifi_disconnected(handler: () => void): void {
         wifiDisconn = handler;
@@ -155,21 +152,27 @@ namespace MakerCloud {
      * @param rx Rx pin; eg: SerialPin.P1
      */
     //% blockId=mc_kt_config_rxtx
-    //% block="update KittenWiFi pin: | RX: %rx| TX: %tx"
+    //% block="update pin | RX: %rx| TX: %tx"
     //% group="Connection"
     export function configRxTxPin(rx: SerialPin, tx: SerialPin) {
         SERIAL_TX = tx
         SERIAL_RX = rx
     }
-
+    /**
+     * Configuration Armourbit Port
+     * @param tx Tx pin; eg: SerialPin.P2
+     * @param rx Rx pin; eg: SerialPin.P1
+     */
     //% blockId=mc_kt_config_pwbrick
-    //% block="update KittenWiFi port|%port"
+    //% block="update Armourbit port|%port"
     //% group="Connection"
     export function configRxTxPwbrick(port: SerialPorts): void {
         SERIAL_TX = PortSerial[port][1]
         SERIAL_RX = PortSerial[port][0]
     }
-
+    /**
+     * Setup and Connect Wi-Fi using KittenWiFi
+     */
     //% blockId=mc_kt_wifi_setup
     //% block="connect Wi-Fi SSID: %ssid password: %password"
     //% group="Connection"
@@ -180,7 +183,9 @@ namespace MakerCloud {
         serial.writeString(cmd)
         showLoadingStage2(1000)
     }
-
+    /**
+     * Connect to Maker Cloud MQTT Server
+     */
     //% blockId=mc_kt_connect_mc_mqtt
     //% block="connect Maker Cloud MQTT"
     //% group="Connection"
@@ -190,6 +195,7 @@ namespace MakerCloud {
 
     // Block in Publish
     /**
+     * Publish Message to MakerCloud
      * @param topic ,eg: "topic"
      * @param message ,eg: "message"
      */
@@ -206,6 +212,7 @@ namespace MakerCloud {
     }
 
     /**
+     * Publish Key and Message to MakerCloud
      * @param topic ,eg: "topic"
      * @param key ,eg: "key"
      * @param inText ,eg: "message"
@@ -223,6 +230,7 @@ namespace MakerCloud {
     }
 
     /**
+     * Publish Key and Value to MakerCloud
      * @param topic ,eg: "topic"
      * @param key ,eg: "key"
      * @param value ,eg: "0"
@@ -240,7 +248,7 @@ namespace MakerCloud {
     }
 
     /**
-     * Subscribe to MQTT topic
+     * Subscribe MQTT topic
      * @param inTopics to inTopics ,eg: "topic"
      */
     //% blockId=mc_kt_subscribe_topic
@@ -257,7 +265,7 @@ namespace MakerCloud {
     }
 
     /**
-     * Listener for MQTT topic
+     * Listener for Message from Maker Cloud
      * @param topic to topic ,eg: "topic"
      */
     //% blockId=mc_kt_register_topic_text_message_handler
@@ -272,7 +280,7 @@ namespace MakerCloud {
     }
 
     /**
-     * Listener for MQTT topic
+     * Listener for Key and Message from Maker Cloud
      * @param topic to topic ,eg: "topic"
      */
     //% blockId=mc_kt_register_topic_key_string_message_handler
@@ -287,6 +295,7 @@ namespace MakerCloud {
     }
 
     /**
+     * Listener for Key and Value from Maker Cloud
      * Listener for MQTT topic
      * @param topic to topic ,eg: "topic"
      */
