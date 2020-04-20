@@ -5,6 +5,7 @@ load dependency
 */
 
 //% color="#31C7D5" weight=10 icon="\uf1eb"
+//% groups='["Connection", "Publish", "Subscribe"]'
 namespace Makercloud_Kitten {
     const CMD_SYNC = 1;
     const CMD_RESP_V = 2;
@@ -47,6 +48,12 @@ namespace Makercloud_Kitten {
         PORT3 = 2,
         PORT4 = 3
     }
+
+    type EvtStr = (data: string) => void;
+    type EvtAct = () => void;
+    type EvtNum = (data: number) => void;
+    type EvtDict = (topic: string, data: string) => void;
+
     let SERIAL_TX = SerialPin.P2
     let SERIAL_RX = SerialPin.P1
 
@@ -55,28 +62,47 @@ namespace Makercloud_Kitten {
     let SERVER = PROD_SERVER
     let ipAddr: string = '';
     let v: string;
+    let topics: string[];
+
+    let wifiConn: EvtAct = null;
+    let wifiDisconn: EvtAct = null;
+
+    let isInit = false;
+    let isSetup = false;
+    let isSubscribe = false;
 
     export class StringMessageHandler {
         topicName: string;
         fn: (stringMessage: string) => void;
     }
 
-    export class KeyValueMessageHandler {
+    export class KeyStringMessageHandler {
         topicName: string;
         fn: (key: string, value: string) => void;
+    }
+
+    export class KeyValueMessageHandler {
+        topicName: string;
+        fn: (key: string, value: number) => void;
     }
 
     let stringMessageHandlerList: StringMessageHandler[] = [
         new StringMessageHandler()
     ]
+    let keyStringMessageHandlerList: KeyStringMessageHandler[] = [
+        new KeyStringMessageHandler()
+    ]
     let keyValueMessageHandlerList: KeyValueMessageHandler[] = [
         new KeyValueMessageHandler()
     ]
 
-
+    export class KeyStringMessage {
+        key: string;
+        inText: string;
+    }
     export class KeyValueMessage {
         key: string;
-        value: string;
+        value: number;
     }
 
     export class MakerCloudMessage {
@@ -84,7 +110,214 @@ namespace Makercloud_Kitten {
         deviceSerialNumber: string;
         rawMessage: string;
         stringMessageList: string[];
+        keyStringMessageList: KeyStringMessage[];
         keyValueMessagList: KeyValueMessage[];
+    }
+
+    //Block in Advance
+    /**
+    * For testing purpose
+    */
+    //% blockId=mc_kt_change_to_sit
+    //% block="Maker Cloud Lab"
+    //% advanced=true
+    export function changeToSitServer() {
+        SERVER = SIT_SERVER
+    }
+
+    /**
+     * @param SSID to SSID ,eg: "yourSSID"
+     * @param PASSWORD to PASSWORD ,eg: "yourPASSWORD"
+     * @param IOT_TOPIC to IOT_TOPIC ,eg: "yourIotTopic"
+     */
+    //% blockId=mc_kt_init
+    //% block="Initialise Maker Cloud"
+    //% advanced=true
+    export function init() {
+        init_kittenWiFi()
+    }
+
+    /**
+     * Connect your device to MQTT Server
+     */
+    //% blockId=mc_kt_connect_mqtt
+    //% block="Connect MQTT"
+    //% advanced=true
+    export function connectMqtt() {
+        connectMCMQTT()
+    }
+
+    /**
+     * On wifi connected
+     * @param handler Wifi connected callback
+     */
+    //% blockId=on_wifi_connected block="on Wifi Connected"
+    //% advanced=true
+    export function on_wifi_connected(handler: () => void): void {
+        wifiConn = handler;
+    }
+
+    /**
+     * On wifi disconnected
+     * @param handler Wifi disconnected callback
+     */
+    //% blockId=on_wifi_disconnected block="on Wifi Disconnected"
+    //% advanced=true
+    export function on_wifi_disconnected(handler: () => void): void {
+        wifiDisconn = handler;
+    }
+
+    //Block in Connection
+    /**
+     * Configuration RX TX Pin
+     * @param tx Tx pin; eg: SerialPin.P2
+     * @param rx Rx pin; eg: SerialPin.P1
+     */
+    //% blockId=mc_kt_config_rxtx
+    //% block="Update Pin: | RX: %rx| TX: %tx"
+    //% group="Connection"
+    export function configRxTxPin(rx: SerialPin, tx: SerialPin) {
+        SERIAL_TX = tx
+        SERIAL_RX = rx
+    }
+
+    //% blockId=mc_kt_config_pwbrick
+    //% block="Update Armourbit Port|%port"
+    //% group="Connection"
+    export function configRxTxPwbrick(port: SerialPorts): void {
+        SERIAL_TX = PortSerial[port][1]
+        SERIAL_RX = PortSerial[port][0]
+    }
+
+    //% blockId=mc_kt_wifi_setup
+    //% block="Connect Wi-Fi SSID: %ssid Password: %password"
+    //% group="Connection"
+    export function setupWifi(ssid: string, password: string) {
+        init_kittenWiFi()
+        isInit = true
+        let cmd: string = 'WF 52 2 52 ' + ssid + ' ' + password + '\n'
+        serial.writeString(cmd)
+        showLoadingStage2(1000)
+    }
+
+    //% blockId=mc_kt_connect_mc_mqtt
+    //% block="Connect Maker Cloud MQTT"
+    //% group="Connection"
+    export function connectMakerCloudMQTT() {
+        // connectMCMQTT()
+    }
+
+    // Block in Publish
+    /**
+     * @param topic ,eg: "topic"
+     * @param message ,eg: "message"
+     */
+    //% blockId=mc_kt_publish_message_to_topic
+    //% block="tell %topic about %message"
+    //% group="Publish"
+    export function publishToTopic(topic: string, message: string) {
+        if (isSetup) {
+            message = "_dsn=" + control.deviceSerialNumber() + ",_dn=" + control.deviceName() + "," + message
+            let cmd: string = 'WF 11 4 11 0 0 ' + topic + ' ' + message + '\n'
+            serial.writeString(cmd)
+            basic.pause(200) // limit user pub rate
+        }
+    }
+
+    /**
+     * @param topic ,eg: "topic"
+     * @param key ,eg: "key"
+     * @param inText ,eg: "message"
+     */
+    //% blockId=mc_kt_publish_key_text_message_to_topic
+    //% block="tell %topic about %key = $inText"
+    //% group="Publish"
+    export function publishKeyTextToTopic(topic: string, key: string, inText: string) {
+        if (isSetup) {
+            let message = "_dsn=" + control.deviceSerialNumber() + ",_dn=" + control.deviceName() + "," + key + "=" + inText
+            let cmd: string = 'WF 11 4 11 0 0 ' + topic + ' ' + message + '\n'
+            serial.writeString(cmd)
+            basic.pause(200) // limit user pub rate        
+        }
+    }
+
+    /**
+     * @param topic ,eg: "topic"
+     * @param key ,eg: "key"
+     * @param value ,eg: "0"
+    */
+    //% blockId=mc_kt_publish_key_value_message_to_topic
+    //% block="tell %topic about %key = $value"
+    //% group="Publish"
+    export function publishKeyValueToTopic(topic: string, key: string, value: number) {
+        if (isSetup) {
+            let message = "_dsn=" + control.deviceSerialNumber() + ",_dn=" + control.deviceName() + "," + key + "=" + value
+            let cmd: string = 'WF 11 4 11 0 0 ' + topic + ' ' + message + '\n'
+            serial.writeString(cmd)
+            basic.pause(200) // limit user pub rate        
+        }
+    }
+
+    /**
+     * Subscribe to MQTT topic
+     * @param inTopics to inTopics ,eg: "Topic"
+     */
+    //% blockId=mc_kt_subscribe_topic
+    //% block="Subscribe to %topics"
+    //% group="Subscribe"
+    export function subscribeTopic(inTopics: string) {
+        if (topics == null) {
+            topics = splitMessage(inTopics, ",")
+        } else {
+            topics = topics.concat(splitMessage(inTopics, ","))
+        }
+        subscribeMQTT()
+        isSubscribe = true
+    }
+
+    /**
+     * Listener for MQTT topic
+     * @param topic to topic ,eg: "ZXY"
+     */
+    //% blockId=mc_kt_register_topic_text_message_handler
+    //% block="When something talk to %topic, then"
+    //% draggableParameters
+    //% group="Subscribe"
+    export function registerTopicMessageHandler(topic: string, fn: (textMessage: string) => void) {
+        let topicHandler = new StringMessageHandler()
+        topicHandler.fn = fn
+        topicHandler.topicName = topic
+        stringMessageHandlerList.push(topicHandler)
+    }
+
+    /**
+     * Listener for MQTT topic
+     * @param topic to topic ,eg: "ZXY"
+     */
+    //% blockId=mc_kt_register_topic_key_string_message_handler
+    //% block="When something talk to %topic, then"
+    //% draggableParameters
+    //% group="Subscribe"
+    export function registerTopicKeyStringMessageHandler(topic: string, fn: (key: string, message: string) => void) {
+        let topicHandler = new KeyStringMessageHandler()
+        topicHandler.fn = fn
+        topicHandler.topicName = topic
+        keyStringMessageHandlerList.push(topicHandler)
+    }
+
+    /**
+     * Listener for MQTT topic
+     * @param topic to topic ,eg: "ZXY"
+     */
+    //% blockId=mc_kt_register_topic_key_value_message_handler
+    //% block="When something talk to %topic, then"
+    //% draggableParameters
+    //% group="Subscribe"
+    export function registerTopicKeyValueMessageHandler(topic: string, fn: (key: string, value: number) => void) {
+        let topicHandler = new KeyValueMessageHandler()
+        topicHandler.fn = fn
+        topicHandler.topicName = topic
+        keyValueMessageHandlerList.push(topicHandler)
     }
 
     function trim(t: string): string {
@@ -111,8 +344,14 @@ namespace Makercloud_Kitten {
             if (stat == 5) {
                 serial.writeString("WF 10 4 0 2 3 4 5\n") // mqtt callback install
                 ipAddr = seekNext()
+                if (wifiConn && isInit) {
+                    wifiConn()
+                    connectMCMQTT()
+                    // showLoading(5000)
+                }
             } else {
                 ipAddr = ''
+                if (wifiDisconn && isSetup) wifiDisconn()
             }
         } else if (Callback.MQTT_DATA == cb) {
             let topic: string = seekNext()
@@ -120,6 +359,8 @@ namespace Makercloud_Kitten {
             let makerCloudMessage = parseMakerCloudMessage(data);
             handleTopicStringMessage(topic, makerCloudMessage.stringMessageList);
             handleTopicKeyValueMessage(topic, makerCloudMessage.keyValueMessagList)
+            handleTopicKeyStringMessage(topic, makerCloudMessage.keyStringMessageList)
+
             //if (mqttCbTopicData) {
             //    mqttCbTopicData(topic, data)
             //}
@@ -130,188 +371,6 @@ namespace Makercloud_Kitten {
             //    basic.pause(300)
             //}
         }
-    }
-
-
-
-    /**
-     * @param SSID to SSID ,eg: "yourSSID"
-     * @param PASSWORD to PASSWORD ,eg: "yourPASSWORD"
-     */
-    //% blockId=mc_kt_wifi_setup
-    //% block="connect Wi-Fi: | name: %ssid| password: %password"
-    export function setupWifi(ssid: string, password: string) {
-        let cmd: string = 'WF 52 2 52 ' + ssid + ' ' + password + '\n'
-        serial.writeString(cmd)
-        showLoading(7000)
-    }
-
-    /**
-     * For testing purpose
-     */
-    //% blockId=mc_kt_change_to_sit
-    //% block="Maker Cloud Lab"
-    //% advanced=true
-    export function changeToSitServer() {
-        SERVER = SIT_SERVER
-    }
-
-    /**
-     * Configuration RX TX Pin
-     */
-    //% blockId=mc_kt_config_rxtx
-    //% block="Update Pin: | RX: %rx| TX: %tx"
-    //% advanced=true
-    export function configRxTxPin(rx: SerialPin, tx: SerialPin) {
-        SERIAL_TX = tx
-        SERIAL_RX = rx
-    }
-
-    //% blockId=mc_kt_config_pwbrick
-    //% block="Update Pin powerbrick Port|%port"
-    //% advanced=true
-    export function configRxTxPwbrick(port: SerialPorts): void {
-        SERIAL_TX = PortSerial[port][1]
-        SERIAL_RX = PortSerial[port][0]
-    }
-
-    export function showLoading(time: number) {
-        let internal = time / 5;
-        basic.showLeds(`
-            # . . . .
-            . . . . .
-            . . . . .
-            . . . . .
-            . . . . .
-            `)
-        basic.pause(internal)
-
-        basic.showLeds(`
-            # # . . .
-            . . . . .
-            . . . . .
-            . . . . .
-            . . . . .
-            `)
-        basic.pause(internal)
-
-        basic.showLeds(`
-            # # . . .
-            . . . . .
-            . . . . .
-            . . . . .
-            . . . . .
-            `)
-        basic.pause(internal)
-
-        basic.showLeds(`
-            # # # . .
-            . . . . .
-            . . . . .
-            . . . . .
-            . . . . .
-            `)
-        basic.pause(internal)
-
-        basic.showLeds(`
-            # # # # #
-            . . . . .
-            . . . . .
-            . . . . .
-            . . . . .
-            `)
-        basic.pause(internal)
-        basic.showString("")
-    }
-
-    /**
-     * @param topic ,eg: "topic"
-     * @param message ,eg: "message"
-     */
-    //% blockId=mc_kt_publish_message_to_topic
-    //% block="tell %topic about %message"
-    //% advance=true
-    export function publishToTopic(topic: string, message: string) {
-        message = "_dsn=" + control.deviceSerialNumber() + ",_dn=" + control.deviceName() + "," + message
-        let cmd: string = 'WF 11 4 11 0 0 ' + topic + ' ' + message + '\n'
-        serial.writeString(cmd)
-        basic.pause(200) // limit user pub rate
-    }
-
-    /**
-     * @param topic ,eg: "topic"
-     * @param key ,eg: "key"
-     * @param value ,eg: "value"
-     */
-    //% blockId=mc_kt_publish_key_value_message_to_topic
-    //% block="tell %topic about %key = $value"
-    //% advance=true
-    export function publishKeyValueToTopic(topic: string, key: string, value: string) {
-        let message = "_dsn=" + control.deviceSerialNumber() + ",_dn=" + control.deviceName() + "," + key + "=" + value
-        let cmd: string = 'WF 11 4 11 0 0 ' + topic + ' ' + message + '\n'
-        serial.writeString(cmd)
-        basic.pause(200) // limit user pub rate        
-    }
-
-    /**
-     * Connect your device to MQTT Server
-     */
-    //% blockId=mc_kt_connect_mqtt
-    //% block="connect mqtt"
-    export function connectMqtt() {
-        let cmd: string = 'WF 15 2 15 ' + SERVER + ' ' + control.deviceName() + '\n'
-        serial.writeString(cmd)
-        basic.pause(1000)
-        // reset mqtt handler
-        serial.writeString("WF 10 4 0 2 3 4 5\n") // mqtt callback install
-        basic.pause(500)
-        showLoading(1000);
-    }
-
-    /**
-     * Subscribe to MQTT topic
-     * @param topics to topics ,eg: "ZXY,ABC"
-     */
-    //% blockId=mc_kt_subscribe_topic
-    //% block="i want to listen to %topics"
-    export function subscrbeTopic(topics: string) {
-        let topicList = splitMessage(topics, ",")
-        let i = 0
-        for (i = 0; i < topicList.length; i++) {
-            if (topicList[i] != "") {
-                serial.writeString("WF 12 2 0 " + topicList[i] + ' 0\n')
-                basic.pause(50)
-            }
-        }
-    }
-
-    /**
-     * Listener for MQTT topic
-     * @param topic to topic ,eg: "ZXY"
-     */
-    //% blockId=mc_kt_register_topic_text_message_handler
-    //% block="When something talk to %topic, then"
-    export function registerTopicMessageHandler(topic: string, fn: (textMessage: string) => void) {
-        let topicHandler = new StringMessageHandler()
-        topicHandler.fn = fn
-        topicHandler.topicName = topic
-        stringMessageHandlerList.push(topicHandler)
-    }
-
-    /**
-     * Listener for MQTT topic
-     * @param topic to topic ,eg: "ZXY"
-     */
-    //% blockId=mc_kt_register_topic_key_value_message_handler
-    //% block="When something talk to %topic, then"
-    export function registerTopicKeyValueMessageHandler(topic: string, fn: (key: string, value: string) => void) {
-        let topicHandler = new KeyValueMessageHandler()
-        topicHandler.fn = fn
-        topicHandler.topicName = topic
-        keyValueMessageHandlerList.push(topicHandler)
-
-
-
     }
 
     serial.onDataReceived('\n', function () {
@@ -331,33 +390,46 @@ namespace Makercloud_Kitten {
         }
     })
 
-
-    /**
-     * @param SSID to SSID ,eg: "yourSSID"
-     * @param PASSWORD to PASSWORD ,eg: "yourPASSWORD"
-     * @param IOT_TOPIC to IOT_TOPIC ,eg: "yourIotTopic"
-     */
-    //% weight=102
-    //% blockId=mc_kt_init
-    //% block="Initialise Maker Cloud"
-    export function init() {
+    function init_kittenWiFi() {
         serial.redirect(
             SERIAL_TX,
             SERIAL_RX,
             BaudRate.BaudRate115200
         )
-
         basic.pause(500)
         serial.setRxBufferSize(64);
         serial.setTxBufferSize(64);
         serial.readString()
         serial.writeString('\n\n')
-        basic.pause(1000)
+        // basic.pause(1000)
         serial.writeString("WF 1 0 1\n") // sync command to add wifi status callback
-        basic.pause(1000)
+        showLoadingStage1(500)
+        // basic.pause(1000)
         serial.writeString("WF 10 4 0 2 3 4 5\n") // mqtt callback install
     }
 
+    function subscribeMQTT() {
+        // let topicList = splitMessage(topics, ",")
+        let i = 0
+        for (i = 0; i < topics.length; i++) {
+            if (topics[i] != "") {
+                serial.writeString("WF 12 2 0 " + topics[i] + ' 0\n')
+                basic.pause(50)
+            }
+        }
+    }
+
+    function connectMCMQTT() {
+        let cmd: string = 'WF 15 2 15 ' + SERVER + ' ' + control.deviceName() + '\n'
+        serial.writeString(cmd)
+        // basic.pause(1000)
+        // reset mqtt handler
+        serial.writeString("WF 10 4 0 2 3 4 5\n") // mqtt callback install
+        if (isSubscribe) subscribeMQTT()
+        // basic.pause(500)
+        // showLoading(1000);
+        showLoadingStage3(500)
+    }
 
     function handleTopicStringMessage(topic: string, stringMessageList: string[]) {
         let i = 0
@@ -366,6 +438,19 @@ namespace Makercloud_Kitten {
                 let j = 0;
                 for (j = 0; j < stringMessageList.length; j++) {
                     stringMessageHandlerList[i].fn(stringMessageList[j]);
+                }
+                break
+            }
+        }
+    }
+
+    function handleTopicKeyStringMessage(topic: string, keyStringMessageList: KeyStringMessage[]) {
+        let i = 0
+        for (i = 0; i < keyStringMessageHandlerList.length; i++) {
+            if (keyStringMessageHandlerList[i].topicName == topic) {
+                let j = 0;
+                for (j = 0; j < keyStringMessageList.length; j++) {
+                    keyStringMessageHandlerList[i].fn(keyStringMessageList[j].key, keyStringMessageList[j].inText);
                 }
                 break
             }
@@ -398,7 +483,6 @@ namespace Makercloud_Kitten {
                 messages[messagesIndex] += letter
             }
         }
-
         return messages
     }
 
@@ -408,6 +492,7 @@ namespace Makercloud_Kitten {
         makerCloudMessage.deviceName = "";
         makerCloudMessage.deviceSerialNumber = "";
         makerCloudMessage.keyValueMessagList = [];
+        makerCloudMessage.keyStringMessageList = [];
         makerCloudMessage.stringMessageList = [];
 
         let delimitor = ",";
@@ -435,10 +520,17 @@ namespace Makercloud_Kitten {
                     } else if (key == "_dn") {
                         makerCloudMessage.deviceName = value;
                     } else {
-                        let keyValue = new KeyValueMessage();
-                        keyValue.key = key;
-                        keyValue.value = value;
-                        makerCloudMessage.keyValueMessagList[makerCloudMessage.keyValueMessagList.length] = keyValue;
+                        if (parseFloat(value) || value == "0") {
+                            let keyValue = new KeyValueMessage();
+                            keyValue.key = key;
+                            keyValue.value = parseFloat(value);
+                            makerCloudMessage.keyValueMessagList[makerCloudMessage.keyValueMessagList.length] = keyValue;
+                        } else {
+                            let keyString = new KeyStringMessage();
+                            keyString.key = key;
+                            keyString.inText = value;
+                            makerCloudMessage.keyStringMessageList[makerCloudMessage.keyValueMessagList.length] = keyString;
+                        }
                     }
                 }
             }
@@ -482,4 +574,192 @@ namespace Makercloud_Kitten {
         return [beforeDelimitor, afterDelimitor];
     }
 
+    export function showLoadingStage1(time: number) {
+        basic.showLeds(`
+        . . . . .
+        . . . . .
+        . . # . .
+        . . . . .
+        . . . . .
+        `)
+        basic.pause(time)
+    }
+
+    export function showLoadingStage2(time: number) {
+        let interval = 0
+        basic.showLeds(`
+        . . . . .
+        . . # . .
+        . . # . .
+        . . . . .
+        . . . . .
+        `)
+        basic.showLeds(`
+        . . . . .
+        . . # # .
+        . . # . .
+        . . . . .
+        . . . . .
+        `)
+        basic.showLeds(`
+        . . . . .
+        . . # # .
+        . . # # .
+        . . . . .
+        . . . . .
+        `)
+        basic.showLeds(`
+        . . . . .
+        . . # # .
+        . . # # .
+        . . . # .
+        . . . . .
+        `)
+        basic.showLeds(`
+        . . . . .
+        . . # # .
+        . . # # .
+        . . # # .
+        . . . . .
+        `)
+        basic.showLeds(`
+        . . . . .
+        . . # # .
+        . . # # .
+        . # # # .
+        . . . . .
+        `)
+        basic.showLeds(`
+        . . . . .
+        . . # # .
+        . # # # .
+        . # # # .
+        . . . . .
+        `)
+        basic.showLeds(`
+        . . . . .
+        . # # # .
+        . # # # .
+        . # # # .
+        . . . . .
+        `)
+    }
+    export function showLoadingStage3(time: number) {
+        let interval = 0
+        basic.showLeds(`
+        . . # . .
+        . # # # .
+        . # # # .
+        . # # # .
+        . . . . .
+        `)
+        basic.showLeds(`
+        . . # # .
+        . # # # .
+        . # # # .
+        . # # # .
+        . . . . .
+        `)
+        basic.showLeds(`
+        . . # # #
+        . # # # .
+        . # # # .
+        . # # # .
+        . . . . .
+        `)
+        basic.showLeds(`
+        . . # # #
+        . # # # #
+        . # # # .
+        . # # # .
+        . . . . .
+        `)
+        basic.showLeds(`
+        . . # # #
+        . # # # #
+        . # # # #
+        . # # # .
+        . . . . .
+        `)
+        basic.showLeds(`
+        . . # # #
+        . # # # #
+        . # # # #
+        . # # # #
+        . . . . .
+        `)
+        basic.showLeds(`
+        . . # # #
+        . # # # #
+        . # # # #
+        . # # # #
+        . . . . #
+        `)
+        basic.showLeds(`
+        . . # # #
+        . # # # #
+        . # # # #
+        . # # # #
+        . . . # #
+        `)
+        basic.showLeds(`
+        . . # # #
+        . # # # #
+        . # # # #
+        . # # # #
+        . . # # #
+        `)
+        basic.showLeds(`
+        . . # # #
+        . # # # #
+        . # # # #
+        . # # # #
+        . # # # #
+        `)
+        basic.showLeds(`
+        . . # # #
+        . # # # #
+        . # # # #
+        . # # # #
+        # # # # #
+        `)
+        basic.showLeds(`
+        . . # # #
+        . # # # #
+        . # # # #
+        # # # # #
+        # # # # #
+        `)
+        basic.showLeds(`
+        . . # # #
+        . # # # #
+        # # # # #
+        # # # # #
+        # # # # #
+        `)
+        basic.showLeds(`
+        . . # # #
+        # # # # #
+        # # # # #
+        # # # # #
+        # # # # #
+        `)
+        basic.showLeds(`
+        # . # # #
+        # # # # #
+        # # # # #
+        # # # # #
+        # # # # #
+        `)
+        basic.showLeds(`
+        # # # # #
+        # # # # #
+        # # # # #
+        # # # # #
+        # # # # #
+        `)
+        isSetup = true
+        basic.clearScreen()
+    }
 }
+
