@@ -8,7 +8,9 @@
     },
     "files": [
         "README.md",
-        "main.ts"
+        "main.ts",
+        "_locales/zh-tw/makercloud_v2-strings.json",
+        "_locales/zh-tw/makercloud_v2-jsdoc-strings.json"
     ],
     "public": true,
     "supportedTargets": [
