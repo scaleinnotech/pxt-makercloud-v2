@@ -6,7 +6,7 @@ load dependency
 
 //% color="#31C7D5" weight=10 icon="\uf1eb"
 //% groups='["Connection", "Publish", "Subscribe"]'
-namespace Makercloud_Kitten {
+namespace MakerCloud {
     const CMD_SYNC = 1;
     const CMD_RESP_V = 2;
     const CMD_RESP_CB = 3;
@@ -120,6 +120,7 @@ namespace Makercloud_Kitten {
     */
     //% blockId=mc_kt_change_to_sit
     //% block="Maker Cloud Lab"
+    //% weight = 90
     //% advanced=true
     export function changeToSitServer() {
         SERVER = SIT_SERVER
@@ -130,6 +131,7 @@ namespace Makercloud_Kitten {
      * @param handler Wifi connected callback
      */
     //% blockId=on_wifi_connected block="on Wi-Fi connected"
+    //% weight = 80
     //% advanced=true
     export function on_wifi_connected(handler: () => void): void {
         wifiConn = handler;
@@ -140,6 +142,7 @@ namespace Makercloud_Kitten {
      * @param handler Wifi disconnected callback
      */
     //% blockId=on_wifi_disconnected block="on Wi-Fi disconnected"
+    //% weight = 70
     //% advanced=true
     export function on_wifi_disconnected(handler: () => void): void {
         wifiDisconn = handler;
@@ -152,7 +155,7 @@ namespace Makercloud_Kitten {
      * @param rx Rx pin; eg: SerialPin.P1
      */
     //% blockId=mc_kt_config_rxtx
-    //% block="update pin: | RX: %rx| TX: %tx"
+    //% block="update KittenWiFi pin: | RX: %rx| TX: %tx"
     //% group="Connection"
     export function configRxTxPin(rx: SerialPin, tx: SerialPin) {
         SERIAL_TX = tx
@@ -160,7 +163,7 @@ namespace Makercloud_Kitten {
     }
 
     //% blockId=mc_kt_config_pwbrick
-    //% block="update Armourbit port|%port"
+    //% block="update KittenWiFi port|%port"
     //% group="Connection"
     export function configRxTxPwbrick(port: SerialPorts): void {
         SERIAL_TX = PortSerial[port][1]
