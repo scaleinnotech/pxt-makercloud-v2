@@ -18,6 +18,5 @@
     "supportedTargets": [
         "microbit"
     ],
-    "preferredEditor": "tsprj",
-    "installedVersion": "workspace:ee7169e6-d9ca-458a-8ecb-d573dca1d675"
+    "preferredEditor": "tsprj"
 }
