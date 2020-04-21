@@ -9,10 +9,10 @@
     "files": [
         "README.md",
         "main.ts",
-        "_locales/zh-CN/makercloud_v2-strings.json",
-        "_locales/zh-CN/makercloud_v2-jsdoc-strings.json",
-        "_locales/zh-TW/makercloud_v2-strings.json",
-        "_locales/zh-TW/makercloud_v2-jsdoc-strings.json"
+        "_locales/zh-cn/makercloud_v2-strings.json",
+        "_locales/zh-cn/makercloud_v2-jsdoc-strings.json",
+        "_locales/zh-tw/makercloud_v2-strings.json",
+        "_locales/zh-tw/makercloud_v2-jsdoc-strings.json"
     ],
     "public": true,
     "supportedTargets": [
