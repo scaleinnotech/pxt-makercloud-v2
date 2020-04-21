@@ -1,0 +1,22 @@
+{
+  "MakerCloud.changeToSitServer|block": "Maker Cloud Lab",
+  "MakerCloud.configRxTxPin|block": "update pin | RX: %rx| TX: %tx",
+  "MakerCloud.configRxTxPwbrick|block": "update Armourbit port|%port",
+  "MakerCloud.connectMakerCloudMQTT|block": "connect Maker Cloud MQTT",
+  "MakerCloud.on_wifi_connected|block": "on Wi-Fi connected",
+  "MakerCloud.on_wifi_disconnected|block": "on Wi-Fi disconnected",
+  "MakerCloud.publishCoordinationToTopic|block": "publish to %topic about %lat, $lng",
+  "MakerCloud.publishKeyMessageToTopic|block": "publish to %topic about %key = $inText",
+  "MakerCloud.publishKeyValueToTopic|block": "publish to %topic about %key = $value",
+  "MakerCloud.publishToTopic|block": "publish to %topic about %message",
+  "MakerCloud.registerTopicKeyStringMessageHandler|block": "on MQTT %topic received",
+  "MakerCloud.registerTopicKeyValueMessageHandler|block": "on MQTT %topic received",
+  "MakerCloud.registerTopicMessageHandler|block": "on MQTT %topic received",
+  "MakerCloud.setupWifi|block": "connect Wi-Fi SSID: %ssid password: %password",
+  "MakerCloud.subscribeTopic|block": "subscribe %topics",
+  "MakerCloud|block": "MakerCloud",
+  "{id:category}MakerCloud": "MakerCloud",
+  "{id:group}Connection": "Connection",
+  "{id:group}Publish": "Publish",
+  "{id:group}Subscribe": "Subscribe"
+}

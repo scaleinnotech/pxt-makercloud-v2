@@ -1,7 +1,7 @@
 {
     "name": "makercloud_v2",
     "version": "0.2.1",
-    "description": "MQTT communication to Maker Cloud with KittenWiFi",
+    "description": "mqtt communication to makercloud with kittenbot's wifi module",
     "license": "MIT",
     "dependencies": {
         "core": "*"
@@ -9,15 +9,15 @@
     "files": [
         "README.md",
         "main.ts",
-        "_locales/zh-cn/makercloud_v2-strings.json",
-        "_locales/zh-cn/makercloud_v2-jsdoc-strings.json",
-        "_locales/zh-tw/makercloud_v2-strings.json",
-        "_locales/zh-tw/makercloud_v2-jsdoc-strings.json"
+        "_locales/zh-CN/makercloud_v2-strings.json",
+        "_locales/zh-CN/makercloud_v2-jsdoc-strings.json",
+        "_locales/zh-TW/makercloud_v2-strings.json",
+        "_locales/zh-TW/makercloud_v2-jsdoc-strings.json"
     ],
     "public": true,
     "supportedTargets": [
         "microbit"
     ],
     "preferredEditor": "tsprj",
-    "installedVersion": "workspace:22c90de5-c2cf-4571-5b13-7312651f1169"
+    "installedVersion": "workspace:2b6c5ddc-71bd-4dfe-a70b-69e49a437db6"
 }
