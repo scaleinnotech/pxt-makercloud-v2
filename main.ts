@@ -1,5 +1,6 @@
 /*
 Riven
+Modified by Max@SCALE
 load dependency
 "makercloud": "file:../pxt-makercloud"
 */
@@ -190,7 +191,7 @@ namespace MakerCloud {
     //% block="connect Maker Cloud MQTT"
     //% group="Connection"
     export function connectMakerCloudMQTT() {
-        // connectMCMQTT()
+        serial.writeString("WF 10 4 0 2 3 4 5\n") // mqtt callback install
     }
 
     // Block in Publish
@@ -217,10 +218,10 @@ namespace MakerCloud {
      * @param key ,eg: "key"
      * @param inText ,eg: "message"
      */
-    //% blockId=mc_kt_publish_key_text_message_to_topic
+    //% blockId=mc_kt_publish_key_message_to_topic
     //% block="publish to %topic about %key = $inText"
     //% group="Publish"
-    export function publishKeyTextToTopic(topic: string, key: string, inText: string) {
+    export function publishKeyMessageToTopic(topic: string, key: string, inText: string) {
         if (isSetup) {
             let message = "_dsn=" + control.deviceSerialNumber() + ",_dn=" + control.deviceName() + "," + key + "=" + inText
             let cmd: string = 'WF 11 4 11 0 0 ' + topic + ' ' + message + '\n'
@@ -235,12 +236,30 @@ namespace MakerCloud {
      * @param key ,eg: "key"
      * @param value ,eg: "0"
     */
-    //% blockId=mc_kt_publish_key_value_message_to_topic
+    //% blockId=mc_kt_publish_key_value_to_topic
     //% block="publish to %topic about %key = $value"
     //% group="Publish"
     export function publishKeyValueToTopic(topic: string, key: string, value: number) {
         if (isSetup) {
             let message = "_dsn=" + control.deviceSerialNumber() + ",_dn=" + control.deviceName() + "," + key + "=" + value
+            let cmd: string = 'WF 11 4 11 0 0 ' + topic + ' ' + message + '\n'
+            serial.writeString(cmd)
+            basic.pause(200) // limit user pub rate        
+        }
+    }
+
+    /**
+     * Publish Location Coordinate to MakerCloud
+     * @param topic ,eg: "topic"
+     * @param lat ,eg: "latitude"
+     * @param lng ,eg: "longitude"
+    */
+    //% blockId=mc_kt_publish_coordination_to_topic
+    //% block="publish to %topic about %lat, $lng"
+    //% group="Publish"
+    export function publishCoordinationToTopic(topic: string, lat: string, lng: string) {
+        if (isSetup) {
+            let message = "_dsn=" + control.deviceSerialNumber() + ",_dn=" + control.deviceName() + ",lat=" + lat + ",lng=" + lng
             let cmd: string = 'WF 11 4 11 0 0 ' + topic + ' ' + message + '\n'
             serial.writeString(cmd)
             basic.pause(200) // limit user pub rate        
@@ -296,7 +315,6 @@ namespace MakerCloud {
 
     /**
      * Listener for Key and Value from Maker Cloud
-     * Listener for MQTT topic
      * @param topic to topic ,eg: "topic"
      */
     //% blockId=mc_kt_register_topic_key_value_message_handler
@@ -639,7 +657,7 @@ namespace MakerCloud {
         `)
     }
     export function showLoadingStage3(time: number) {
-        let interval = time/16
+        let interval = time / 16
         interval = 0
         basic.showLeds(`
         . . # . .
