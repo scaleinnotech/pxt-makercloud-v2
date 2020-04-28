@@ -1,7 +1,7 @@
 {
     "name": "makercloud_v2",
     "version": "1.0.2",
-    "description": "mqtt communication to makercloud with kittenbot's wifi module",
+    "description": "MQTT communication to Maker Cloud with KittenWiFi",
     "license": "MIT",
     "dependencies": {
         "core": "*"
