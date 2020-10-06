@@ -122,6 +122,7 @@ namespace MakerCloud {
     //% blockId=mc_kt_change_to_sit
     //% block="Maker Cloud Lab"
     //% advanced=true
+    //% weight=103
     export function changeToSitServer() {
         SERVER = SIT_SERVER
     }
@@ -132,6 +133,7 @@ namespace MakerCloud {
      */
     //% blockId=on_wifi_connected block="on Wi-Fi connected"
     //% advanced=true
+    //% weight=102
     export function on_wifi_connected(handler: () => void): void {
         wifiConn = handler;
     }
@@ -142,6 +144,7 @@ namespace MakerCloud {
      */
     //% blockId=on_wifi_disconnected block="on Wi-Fi disconnected"
     //% advanced=true
+    //% weight=101
     export function on_wifi_disconnected(handler: () => void): void {
         wifiDisconn = handler;
     }
@@ -155,6 +158,7 @@ namespace MakerCloud {
     //% blockId=mc_kt_config_rxtx
     //% block="update pin | RX: %rx| TX: %tx"
     //% group="Connection"
+    //% weight=104
     export function configRxTxPin(rx: SerialPin, tx: SerialPin) {
         SERIAL_TX = tx
         SERIAL_RX = rx
@@ -167,6 +171,7 @@ namespace MakerCloud {
     //% blockId=mc_kt_config_pwbrick
     //% block="update Armourbit port|%port"
     //% group="Connection"
+    //% weight=103
     export function configRxTxPwbrick(port: SerialPorts): void {
         SERIAL_TX = PortSerial[port][1]
         SERIAL_RX = PortSerial[port][0]
@@ -177,6 +182,7 @@ namespace MakerCloud {
     //% blockId=mc_kt_wifi_setup
     //% block="connect Wi-Fi SSID: %ssid password: %password"
     //% group="Connection"
+    //% weight=102
     export function setupWifi(ssid: string, password: string) {
         init_kittenWiFi()
         isInit = true
@@ -190,6 +196,7 @@ namespace MakerCloud {
     //% blockId=mc_kt_connect_mc_mqtt
     //% block="connect Maker Cloud MQTT"
     //% group="Connection"
+    //% weight=101
     export function connectMakerCloudMQTT() {
         serial.writeString("WF 10 4 0 2 3 4 5\n") // mqtt callback install
     }
@@ -203,6 +210,7 @@ namespace MakerCloud {
     //% blockId=mc_kt_publish_message_to_topic
     //% block="publish to %topic about %message"
     //% group="Publish"
+    //% weight=104
     export function publishToTopic(topic: string, message: string) {
         if (isSetup) {
             message = "_dsn=" + control.deviceSerialNumber() + ",_dn=" + control.deviceName() + "," + message
@@ -221,6 +229,7 @@ namespace MakerCloud {
     //% blockId=mc_kt_publish_key_message_to_topic
     //% block="publish to %topic about %key = $inText"
     //% group="Publish"
+    //% weight=103
     export function publishKeyMessageToTopic(topic: string, key: string, inText: string) {
         if (isSetup) {
             let message = "_dsn=" + control.deviceSerialNumber() + ",_dn=" + control.deviceName() + "," + key + "=" + inText
@@ -239,6 +248,7 @@ namespace MakerCloud {
     //% blockId=mc_kt_publish_key_value_to_topic
     //% block="publish to %topic about %key = $value"
     //% group="Publish"
+    //% weight=102
     export function publishKeyValueToTopic(topic: string, key: string, value: number) {
         if (isSetup) {
             let message = "_dsn=" + control.deviceSerialNumber() + ",_dn=" + control.deviceName() + "," + key + "=" + value
@@ -257,6 +267,7 @@ namespace MakerCloud {
     //% blockId=mc_kt_publish_coordination_to_topic
     //% block="publish to %topic about %lat, $lng"
     //% group="Publish"
+    //% weight=101
     export function publishCoordinationToTopic(topic: string, lat: string, lng: string) {
         if (isSetup) {
             let message = "_dsn=" + control.deviceSerialNumber() + ",_dn=" + control.deviceName() + ",lat=" + lat + ",lng=" + lng
@@ -273,6 +284,7 @@ namespace MakerCloud {
     //% blockId=mc_kt_subscribe_topic
     //% block="subscribe %topics"
     //% group="Subscribe"
+    //% weight=104
     export function subscribeTopic(inTopics: string) {
         if (topics == null) {
             topics = splitMessage(inTopics, ",")
@@ -291,6 +303,7 @@ namespace MakerCloud {
     //% block="on MQTT %topic received"
     //% draggableParameters
     //% group="Subscribe"
+    //% weight=103
     export function registerTopicMessageHandler(topic: string, fn: (receivedMessage: string) => void) {
         let topicHandler = new StringMessageHandler()
         topicHandler.fn = fn
@@ -306,6 +319,7 @@ namespace MakerCloud {
     //% block="on MQTT %topic received"
     //% draggableParameters
     //% group="Subscribe"
+    //% weight=102
     export function registerTopicKeyStringMessageHandler(topic: string, fn: (key: string, receivedMessage: string) => void) {
         let topicHandler = new KeyStringMessageHandler()
         topicHandler.fn = fn
@@ -321,6 +335,7 @@ namespace MakerCloud {
     //% block="on MQTT %topic received"
     //% draggableParameters
     //% group="Subscribe"
+    //% weight=101
     export function registerTopicKeyValueMessageHandler(topic: string, fn: (key: string, receivedValue: number) => void) {
         let topicHandler = new KeyValueMessageHandler()
         topicHandler.fn = fn
