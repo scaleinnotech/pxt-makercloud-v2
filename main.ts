@@ -120,7 +120,7 @@ namespace MakerCloud {
     * For testing purpose
     */
     //% blockId=mc_kt_change_to_sit
-    //% block="Maker Cloud Lab"
+    //% block="MakerCloud Lab"
     //% advanced=true
     //% weight=103
     export function changeToSitServer() {
@@ -191,10 +191,10 @@ namespace MakerCloud {
         showLoadingStage2(1000)
     }
     /**
-     * Connect to Maker Cloud MQTT Server
+     * Connect to MakerCloud MQTT Server
      */
     //% blockId=mc_kt_connect_mc_mqtt
-    //% block="connect Maker Cloud MQTT"
+    //% block="connect MakerCloud MQTT"
     //% group="Connection"
     //% weight=101
     export function connectMakerCloudMQTT() {
@@ -270,7 +270,7 @@ namespace MakerCloud {
     //% weight=101
     export function publishCoordinationToTopic(topic: string, lat: string, lng: string) {
         if (isSetup) {
-            let message = "_dsn=" + control.deviceSerialNumber() + ",_dn=" + control.deviceName() + ",lat=" + lat + ",lng=" + lng
+            let message = "_dsn=" + control.deviceSerialNumber() + ",_dn=" + control.deviceName() + ",_lat=" + lat + ",_lng=" + lng
             let cmd: string = 'WF 11 4 11 0 0 ' + topic + ' ' + message + '\n'
             serial.writeString(cmd)
             basic.pause(200) // limit user pub rate        
@@ -296,7 +296,7 @@ namespace MakerCloud {
     }
 
     /**
-     * Listener for Message from Maker Cloud
+     * Listener for Message from MakerCloud
      * @param topic to topic ,eg: "topic"
      */
     //% blockId=mc_kt_register_topic_text_message_handler
@@ -312,7 +312,7 @@ namespace MakerCloud {
     }
 
     /**
-     * Listener for Key and Message from Maker Cloud
+     * Listener for Key and Message from MakerCloud
      * @param topic to topic ,eg: "topic"
      */
     //% blockId=mc_kt_register_topic_key_string_message_handler
@@ -328,7 +328,7 @@ namespace MakerCloud {
     }
 
     /**
-     * Listener for Key and Value from Maker Cloud
+     * Listener for Key and Value from MakerCloud
      * @param topic to topic ,eg: "topic"
      */
     //% blockId=mc_kt_register_topic_key_value_message_handler

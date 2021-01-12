@@ -4,7 +4,8 @@
     "description": "MQTT communication to Maker Cloud with KittenWiFi",
     "license": "MIT",
     "dependencies": {
-        "core": "*"
+        "core": "*",
+        "microphone": "*"
     },
     "files": [
         "README.md",
