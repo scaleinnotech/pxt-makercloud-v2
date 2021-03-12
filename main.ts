@@ -50,6 +50,12 @@ namespace MakerCloud {
         PORT4 = 3
     }
 
+    export enum HeaderType {
+        Header = 0,
+        ContentType = 1,
+        UserAgent = 2
+    }
+
     type EvtStr = (data: string) => void;
     type EvtAct = () => void;
     type EvtNum = (data: number) => void;
@@ -61,6 +67,10 @@ namespace MakerCloud {
     let PROD_SERVER = "mqtt.makercloud.scaleinnotech.com"
     let SIT_SERVER = "mqtt.makercloud-sit.scaleinnotech.com"
     let SERVER = PROD_SERVER
+    let REST_SERVER = "api.makercloud.io"
+    let REST_PORT = 80;
+    let REST_SECURE = 0;
+    let REST_METHOD = "GET"
     let ipAddr: string = '';
     let v: string;
     let topics: string[];
@@ -71,6 +81,10 @@ namespace MakerCloud {
     let isInit = false;
     let isSetup = false;
     let isSubscribe = false;
+
+    // no multi udp or restful instance support for microbit
+    let udpRxEvt: EvtStr = null;
+    let restRxEvt: (data:string) => void = null;
 
     export class StringMessageHandler {
         topicName: string;
@@ -147,6 +161,48 @@ namespace MakerCloud {
     //% weight=101
     export function on_wifi_disconnected(handler: () => void): void {
         wifiDisconn = handler;
+    }
+
+    // Blocks for rest api
+    /**
+     * Set Restful host
+    */
+    //% blockId=rest_host block="Setup MakerCloud REST Service"
+    //% weight=70
+    //% advanced=true
+    //% group="REST"
+    export function rest_host(): void {
+        // todo: support https connection?
+        // let secure = false;
+        serial.writeString("WF 20 3 20 " + REST_SERVER + " " + REST_PORT + ` ${REST_SECURE}\n`)
+        basic.pause(500)
+    }
+
+    /**
+     * MakerCloud REST Request
+     * @param api API link; eg: api
+    */
+    //% blockId=rest_request block="MakerCloud REST Request %api"
+    //% weight=68
+    //% advanced=true
+    //% group="REST"
+    export function rest_request(api: string): void {
+        api = api.replace("http://api.makercloud.io", "")
+        api = api.replace("https://api.makercloud.io", "")
+        api = api.replace("//api.makercloud.io", "")
+        serial.writeString("WF 21 2 0 " + REST_METHOD + " " + api + "\n")
+        basic.pause(10000)
+    }
+
+    /**
+     * Restful request return
+    */
+    //% blockId=rest_ret block="MakerCloud REST Return"
+    //% weight=66
+    //% advanced=true draggableParameters=reporter
+    //% group="REST"
+    export function rest_ret(handler: (RESTData: string) => void): void {
+        restRxEvt = handler;
     }
 
     //Block in Connection
@@ -412,6 +468,15 @@ namespace MakerCloud {
             //  todo: is there an async way to handle response value?
             if (cmd == CMD_RESP_CB) {
                 parseCallback(cb)
+            } else if (cmd == CMD_REST_RET) {
+                let code = parseInt(seekNext())
+                if (restRxEvt){
+                    if(code == 200){
+                        restRxEvt(v)
+                    }else{
+                        restRxEvt("ERROR" + code)
+                    }
+                }
             }
         }
     })
